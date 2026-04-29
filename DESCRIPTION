@@ -1,16 +1,17 @@
 Package: BVSMEInteractionMVN
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Bayesian Variable Selection for Modifier-Environment Interaction with Hierarchical Horseshoe Priors for Multivariate Normal Models
 Version: 0.1.0
 Authors@R: c(
     person(
-      "Jane", "Doe",
-      email = "jane@example.com",
+      "Sonia", "Khatun",
+      email = "soniast@colostate.edu", 
       role = c("aut", "cre")
     )
   )
-Description: More about what it does (maybe more than one line).
-    Continuation lines should be indented.
+Description: Implements Bayesian variable selection for multivariate normal
+    outcomes using hierarchical horseshoe priors. The package supports
+    interaction effects and efficient MCMC sampling for high-dimensional data.
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
