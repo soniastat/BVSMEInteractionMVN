@@ -77,6 +77,10 @@ n_all_par <- dim(W)[2]
 ######################################################
 # Fit the BVS-HHS-MVN-cov model on real data
 
+nu_0 <- K+2
+Psi_0 <- diag(K)
+Sigma_init <- rinvwishart(nu_0, Psi_0)
+
 start_time_BVS_HHS_MVN_cov <- Sys.time()
 res_all_par_BVS_HHS_MVN_cov <- fit_BVS_HHS_MVN_cov(
   niter = 6000, burn_in = 1000, thin = 5,
