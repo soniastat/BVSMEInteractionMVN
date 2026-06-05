@@ -23,9 +23,9 @@ library(tidyverse)
 library(readxl)
 
 
-load("exposome_data_analysis/exposome.RData")
-load("exposome_data_analysis/modifiers_covariates.rda")
-load("exposome_data_analysis/exposures.rda")
+load("exposome.RData")
+load("modifiers_covariates.rda")
+load("exposures.rda")
 
 names(covariates)
 
