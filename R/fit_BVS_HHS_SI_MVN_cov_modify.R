@@ -64,7 +64,7 @@ update_theta_BVS_HHS_SI_MVN_cov_modify <- function(Y, K, W, WTW, n_all_par,
   # Inverse using blocks separately
   V_theta_inv_block <- as.matrix(
     bdiag(
-      solve(var_alpha_0),
+      solve(mat_var_varphi),
       solve(var_beta),
       solve(var_gamma),
       solve(var_delta),
