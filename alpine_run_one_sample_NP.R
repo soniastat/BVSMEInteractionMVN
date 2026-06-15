@@ -12,8 +12,8 @@ source("/projects/soniast@colostate.edu/alpine_sim_NP.R")
 
 
 library(LaplacesDemon)
-library(tidyverse)
-library(readxl)
+library(Matrix)
+library(MASS)
 
 
 ############################
@@ -39,9 +39,9 @@ Z <- cbind(
   Metals_Postnatal
 )
 
-K <- 5
-n <- nrow(Y0)
 
+K <- dim(Y0)[2]
+n <- nrow(Y0)
 J <- ncol(X)
 M <- ncol(Z)
 O <- ncol(D)
@@ -96,7 +96,7 @@ theta_update_save <- tryCatch({
   list(
     error=TRUE,
     message=e$message,
-    sample=sample
+    sample_id=sample_id
   )
 
 })
@@ -104,13 +104,13 @@ theta_update_save <- tryCatch({
 
 
 
-dir.create("results_NP", recursive=TRUE, showWarnings=FALSE)
+dir.create("/projects/soniast@colostate.edu/results_NP", recursive=TRUE, showWarnings=FALSE)
 
-outfile <- paste0("/projects/soniast@colostate.edu/results_NP/NP_cov_sample_", sample, ".rds")
+outfile <- paste0("/projects/soniast@colostate.edu/results_NP/NP_cov_sample_", sample_id, ".rds")
 
 saveRDS(theta_update_save, file=outfile)
 
-cat("Finished sample", sample, "\n")
+cat("Finished sample", sample_id, "\n")
 
 
 

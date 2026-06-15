@@ -49,9 +49,9 @@ Z <- cbind(
   Metals_Postnatal
 )
 
-K <- 5
-n <- nrow(Y0)
 
+K <- dim(Y0)[2]
+n <- nrow(Y0)
 J <- ncol(X)
 M <- ncol(Z)
 O <- ncol(D)
@@ -163,7 +163,7 @@ cat("Finished sample", sample, "\n")
 # )
 #
 #
-# # cd /Users/sonia/Desktop/Packages/BVSMEInteractionMVN
+# # in terminal from this location, run these
 #
 # # seq 1 100 | xargs -n 1 -P 5 Rscript run_one_sample_HRHS_SI_cov.R
 #

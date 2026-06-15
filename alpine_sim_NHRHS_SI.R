@@ -1,4 +1,6 @@
 
+# Functions for simulating data and fitting BVS-NHRHS-SI-MVN-cov model
+
 # Simulate data
 Sim_data_BVS_real <- function(K = 4, n = 1000, J = 44, M = 17, O = 6,
                               x, z, d)

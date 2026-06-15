@@ -54,9 +54,8 @@ Z <- cbind(
   Metals_Postnatal
 )
 
-K <- 5
+K <- dim(Y0)[2]
 n <- nrow(Y0)
-
 J <- ncol(X)
 M <- ncol(Z)
 O <- ncol(D)
@@ -148,7 +147,7 @@ saveRDS(
 )
 
 
-# in terminal, run these
+# in terminal from this location, run these
 
 # cd /Users/sonia/Desktop/Packages/BVSMEInteractionMVN
 

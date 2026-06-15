@@ -82,7 +82,8 @@ n_all_par <- dim(W)[2]
 start_time_BVS_HRHS_MVN_cov <- Sys.time()
 res_all_par_BVS_HRHS_MVN_cov <- fit_BVS_HRHS_MVN_cov(
   niter = 6000, burn_in = 1000, thin = 5,
-  n, K, Y, W, n_all_par, J, M, O,
+  n = n, K = K, Y = Y, W = W,
+  n_all_par = n_all_par, J = J, M = M, O = O,
   c = 2.5,
   theta_init = matrix(0.5, nrow = n_all_par, ncol = K),
   lambdasq_beta_init = matrix(0.5, nrow = J, ncol = K),

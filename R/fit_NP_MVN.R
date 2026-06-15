@@ -87,7 +87,7 @@ update_Sigma_NP_MVN <- function(Y, n, W, theta_update, Psi_0, nu_0)
 fit_NP_MVN <- function(niter = 20, burn_in = 2, thin = 1,
                             n, K, Y, W, n_all_par, J, M,
                             theta_init = matrix(0.5, nrow = n_all_par, ncol = K),
-                            Sigma_init = matrix(0.5, nrow = K, ncol = K),
+                            Sigma_init = diag(K),
                             nu_0, Psi_0)
 {
   theta_update <- array(NA, dim = c(niter, n_all_par, K))

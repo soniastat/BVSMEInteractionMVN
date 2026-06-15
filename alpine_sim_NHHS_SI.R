@@ -1,5 +1,5 @@
 
-# Functions for simulating data and fitting BVS-HHS-SI-MVN-cov model
+# Functions for simulating data and fitting BVS-NHHS-SI-MVN-cov model
 
 # Simulate data
 Sim_data_BVS_real <- function(K = 4, n = 1000, J = 44, M = 17, O = 6,
@@ -72,33 +72,21 @@ Sim_data_BVS_real <- function(K = 4, n = 1000, J = 44, M = 17, O = 6,
 
 
 #########################################################
-# Fit HHS-SI model
+# Fit NHHS-SI model
 ########################################################
 
 # Update theta
-update_theta_BVS_HHS_SI_MVN_cov <- function(Y, K, W, n_all_par,
-                                            J, M, O,
-                                            lambdasq_beta_update, tausq_beta_update,
-                                            lambdasq_gamma_update, tausq_gamma_update,
-                                            lambdasq_delta_update, tausq_delta_update,
-                                            sigmasq_varphi, Sigma_update
+update_theta_BVS_NHHS_SI_MVN_cov <- function(Y, K, W, n_all_par,
+                                             J, M, O,
+                                             lambdasq_beta_update, tausq_beta_update,
+                                             lambdasq_gamma_update, tausq_gamma_update,
+                                             lambdasq_delta_update, tausq_delta_update,
+                                             sigmasq_varphi, Sigma_update
 )
 {
   sigmasq_beta_update <- lambdasq_beta_update * tausq_beta_update
   sigmasq_gamma_update <- lambdasq_gamma_update * tausq_gamma_update
-
-  sigmasq_delta_update <- rep(NA, J * M)
-  for (j in 1:J)
-  {
-    for (m in 1:M)
-    {
-      jm <- (j - 1) * M + m   # row index for (j,m)
-      sigmasq_delta_update[jm] <- (lambdasq_delta_update[jm] *
-                                     lambdasq_beta_update[j] *
-                                     lambdasq_gamma_update[m] *
-                                     tausq_delta_update)
-    }
-  }
+  sigmasq_delta_update <- lambdasq_delta_update * tausq_delta_update
 
 
   # Build V_theta (same for all k)
@@ -115,27 +103,24 @@ update_theta_BVS_HHS_SI_MVN_cov <- function(Y, K, W, n_all_par,
 
   # Prior precision
   V_theta_inv <- chol2inv(chol(V_theta))
-  diag_K <- Diagonal(K)
-  prior_prec <- kronecker(diag_K, V_theta_inv)  # I_K ⊗ Vθ⁻¹
+  prior_prec <- kronecker(Diagonal(K), V_theta_inv)  # I_K ⊗ Vθ⁻¹
 
   # Kronecker term from likelihood
   Sigma_inv <- as.matrix(chol2inv(chol(Sigma_update)))
-  WtW <- t(W) %*% W
-  kron_term <- kronecker(Sigma_inv, WtW)  # Σ⁻¹ ⊗ WᵀW
+  kron_term <- kronecker(Sigma_inv, t(W) %*% W)  # Σ⁻¹ ⊗ WᵀW
 
   # Full conditional covariance
-  kron_prior_term <- kron_term + prior_prec
-  Sigma_theta <- chol2inv(chol(kron_prior_term))
+  Sigma_theta <- chol2inv(chol(kron_term + prior_prec))
 
   # Full conditional mean
   vecY <- as.vector(Y)
-  Wt <- t(W)
-  mean_theta_vec <- Sigma_theta %*% (kronecker(Sigma_inv, Wt) %*% vecY)
+  mean_theta_vec <- Sigma_theta %*% (kronecker(Sigma_inv, t(W)) %*% vecY)
 
   # Sample from MVN
   theta_vec <- mvrnorm(1, mu = mean_theta_vec, Sigma = Sigma_theta)
   # Reshape back to n_all_par x K
   theta_update_s <- matrix(theta_vec, nrow = n_all_par, ncol = K)
+
 
   return(theta_update_s)
 }
@@ -144,7 +129,7 @@ update_theta_BVS_HHS_SI_MVN_cov <- function(Y, K, W, n_all_par,
 #######################################################################################
 
 # Update Sigma
-update_Sigma_BVS_HHS_SI_MVN_cov <- function(Y, n, W, theta_update, Psi_0, nu_0)
+update_Sigma_BVS_NHHS_SI_MVN_cov <- function(Y, n, W, theta_update, Psi_0, nu_0)
 {
   # Residuals
   Resid <- Y - W %*% theta_update
@@ -156,13 +141,14 @@ update_Sigma_BVS_HHS_SI_MVN_cov <- function(Y, n, W, theta_update, Psi_0, nu_0)
   # Draw from IW
   Sigma_update_s <- rinvwishart(nu_n, Psi_n)
 
-  return(Sigma_update_s)
+  return(Sigma_update = Sigma_update_s)
 }
+
 
 #######################################################################################
 
-# Update lambdasq_beta (for all j = 1, 2, ..., J)
-update_lambdasq_beta_BVS_HHS_SI_MVN_cov <- function(J, K, beta_update, psi_beta_update, tausq_beta_update)
+# Update lambdasq_beta (for all j = 1, 2, ..., J, and k = 1, 2, ..., K)
+update_lambdasq_beta_BVS_NHHS_SI_MVN_cov <- function(J, K, beta_update, psi_beta_update, tausq_beta_update)
 {
   lambdasq_beta_update_s <- rep(NA, J)
   shape_lambdasq_beta <- (K+1)/2
@@ -179,8 +165,8 @@ update_lambdasq_beta_BVS_HHS_SI_MVN_cov <- function(J, K, beta_update, psi_beta_
 
 #######################################################################################
 
-# Update lambdasq_gamma (for all m = 1, 2, ..., M)
-update_lambdasq_gamma_BVS_HHS_SI_MVN_cov <- function(M, K, gamma_update, psi_gamma_update, tausq_gamma_update)
+# Update lambdasq_gamma (for all m = 1, 2, ..., M, and k = 1, 2, ..., K)
+update_lambdasq_gamma_BVS_NHHS_SI_MVN_cov <- function(M, K, gamma_update, psi_gamma_update, tausq_gamma_update)
 {
   lambdasq_gamma_update_s <- rep(NA, M)
   shape_lambdasq_gamma <- (K+1)/2
@@ -196,9 +182,8 @@ update_lambdasq_gamma_BVS_HHS_SI_MVN_cov <- function(M, K, gamma_update, psi_gam
 
 #####################################################################################
 
-# Update lambdasq_delta (for all j and m)
-update_lambdasq_delta_BVS_HHS_SI_MVN_cov <- function(J, M, K, delta_update, lambdasq_beta_update,
-                                                     lambdasq_gamma_update, psi_delta_update, tausq_delta_update)
+# Update lambdasq_delta (for all j and m, and k = 1, 2, ..., K)
+update_lambdasq_delta_BVS_NHHS_SI_MVN_cov <- function(J, M, K, delta_update, psi_delta_update, tausq_delta_update)
 {
   lambdasq_delta_update_s <- rep(NA, J*M)
   shape_lambdasq_delta <- (K+1)/2
@@ -209,7 +194,7 @@ update_lambdasq_delta_BVS_HHS_SI_MVN_cov <- function(J, M, K, delta_update, lamb
     {
       jm <- (j - 1) * M + m  # correct order based on E matrix construction
       scale_lambdasq_delta <- ((1/psi_delta_update[jm]) + (sum((delta_update[jm, ])^2) /
-                                                             (2 * lambdasq_beta_update[j] * lambdasq_gamma_update[m] * tausq_delta_update)))
+                                                             (2 * tausq_delta_update)))
 
       lambdasq_delta_update_s[jm] <- rinvgamma(1, shape = shape_lambdasq_delta, scale = scale_lambdasq_delta) # IG distribution
     }
@@ -217,10 +202,13 @@ update_lambdasq_delta_BVS_HHS_SI_MVN_cov <- function(J, M, K, delta_update, lamb
   return(lambdasq_delta_update_s)
 }
 
+
+
+
 #######################################################################################
 
-# Update tausq_beta
-update_tausq_beta_BVS_HHS_SI_MVN_cov <- function(J, K, beta_update, lambdasq_beta_update, xi_beta_update)
+# Update tausq_beta (for all j = 1, 2, ..., J)
+update_tausq_beta_BVS_NHHS_SI_MVN_cov <- function(J, K, beta_update, lambdasq_beta_update, xi_beta_update)
 {
 
   sum_term_tausq_beta <- 0
@@ -241,16 +229,15 @@ update_tausq_beta_BVS_HHS_SI_MVN_cov <- function(J, K, beta_update, lambdasq_bet
 
 #######################################################################################
 
-# Update tausq_gamma
-update_tausq_gamma_BVS_HHS_SI_MVN_cov <- function(M, K, gamma_update, lambdasq_gamma_update, xi_gamma_update)
+# Update tausq_gamma (for all m = 1, 2, ..., M)
+update_tausq_gamma_BVS_NHHS_SI_MVN_cov <- function(M, K, gamma_update, lambdasq_gamma_update, xi_gamma_update)
 {
   sum_term_tausq_gamma <- 0
   for(m in 1:M)
   {
     for (k in 1:K)
     {
-      sum_term_tausq_gamma <- sum_term_tausq_gamma + (gamma_update[m, k]^2 /
-                                                        (2 * lambdasq_gamma_update[m]))
+      sum_term_tausq_gamma <- sum_term_tausq_gamma + (gamma_update[m, k]^2 / (2 * lambdasq_gamma_update[m]))
     }
   }
   shape_tausq_gamma <- (M*K + 1) / 2
@@ -263,9 +250,9 @@ update_tausq_gamma_BVS_HHS_SI_MVN_cov <- function(M, K, gamma_update, lambdasq_g
 
 #######################################################################################
 
-# Update tausq_delta
-update_tausq_delta_BVS_HHS_SI_MVN_cov <- function(J, M, K, delta_update, lambdasq_delta_update,
-                                                  lambdasq_beta_update, lambdasq_gamma_update, xi_delta_update)
+# Update tausq_delta (for all j, and m )
+update_tausq_delta_BVS_NHHS_SI_MVN_cov <- function(J, M, K, delta_update, lambdasq_delta_update,
+                                                   xi_delta_update)
 {
   sum_term_tausq_delta <- 0
   for (j in 1:J)
@@ -277,7 +264,7 @@ update_tausq_delta_BVS_HHS_SI_MVN_cov <- function(J, M, K, delta_update, lambdas
       for (k in 1:K)
       {
         sum_term_tausq_delta <- sum_term_tausq_delta + ((delta_update[jm, k])^2 / (2 *
-                                                                                     lambdasq_delta_update[jm] * lambdasq_beta_update[j] * lambdasq_gamma_update[m]))
+                                                                                     lambdasq_delta_update[jm]))
       }
     }
   }
@@ -288,10 +275,13 @@ update_tausq_delta_BVS_HHS_SI_MVN_cov <- function(J, M, K, delta_update, lambdas
   return(tausq_delta_update_s)
 }
 
+
+
+
 #######################################################################################
 
-# Update psi_beta (for all j = 1, 2, ..., J)
-update_psi_beta_BVS_HHS_SI_MVN_cov <- function(J, K, lambdasq_beta_update)
+# Update psi_beta (for all j = 1, 2, ..., J, and k = 1, 2, ..., K)
+update_psi_beta_BVS_NHHS_SI_MVN_cov <- function(J, K, lambdasq_beta_update)
 {
   psi_beta_update_s <- rep(NA, J)
 
@@ -306,8 +296,8 @@ update_psi_beta_BVS_HHS_SI_MVN_cov <- function(J, K, lambdasq_beta_update)
 
 #######################################################################################
 
-# Update psi_gamma (for all m = 1, 2, ..., M)
-update_psi_gamma_BVS_HHS_SI_MVN_cov <- function(M, K, lambdasq_gamma_update)
+# Update psi_gamma (for all m = 1, 2, ..., M, and k = 1, 2, ..., K)
+update_psi_gamma_BVS_NHHS_SI_MVN_cov <- function(M, K, lambdasq_gamma_update)
 {
   psi_gamma_update_s <- rep(NA, M)
 
@@ -323,8 +313,8 @@ update_psi_gamma_BVS_HHS_SI_MVN_cov <- function(M, K, lambdasq_gamma_update)
 
 #######################################################################################
 
-# Update psi_delta (for all j , m)
-update_psi_delta_BVS_HHS_SI_MVN_cov <- function(J, M, K, lambdasq_delta_update)
+# Update psi_delta (for all j , m, and k = 1, 2, ..., K)
+update_psi_delta_BVS_NHHS_SI_MVN_cov <- function(J, M, K, lambdasq_delta_update)
 {
   psi_delta_update_s <- rep(NA, J*M)
 
@@ -336,15 +326,17 @@ update_psi_delta_BVS_HHS_SI_MVN_cov <- function(J, M, K, lambdasq_delta_update)
   return(psi_delta_update_s)
 }
 
+
+
+
 #######################################################################################
 
-# Update xi_beta
-update_xi_beta_BVS_HHS_SI_MVN_cov <- function(J, tausq_beta_update)
+# Update xi_beta (for j = 1, 2, ..., J)
+update_xi_beta_BVS_NHHS_SI_MVN_cov <- function(J, tausq_beta_update)
 {
-  # Use more informative prior (xi_beta ~ IG(15, 3))
+  # Use more informative prior (xi_beta~ IG(15, 3))
   shape_xi_beta <- ((1/2) + 15)
   scale_xi_beta <- (3 + (1 / tausq_beta_update))
-
   xi_beta_update_s <- rinvgamma(1, shape = shape_xi_beta, scale = scale_xi_beta) # IG distribution
   return(xi_beta_update_s)
 }
@@ -353,8 +345,8 @@ update_xi_beta_BVS_HHS_SI_MVN_cov <- function(J, tausq_beta_update)
 
 #######################################################################################
 
-# Update xi_gamma
-update_xi_gamma_BVS_HHS_SI_MVN_cov <- function(M, tausq_gamma_update)
+# Update xi_gamma (for m = 1, 2, ..., M)
+update_xi_gamma_BVS_NHHS_SI_MVN_cov <- function(M, tausq_gamma_update)
 {
   # Use more informative prior (xi_gamma ~ IG(15, 3))
   shape_xi_gamma <- ((1/2) + 15)
@@ -368,8 +360,8 @@ update_xi_gamma_BVS_HHS_SI_MVN_cov <- function(M, tausq_gamma_update)
 
 #######################################################################################
 
-# Update xi_delta
-update_xi_delta_BVS_HHS_SI_MVN_cov <- function(J, M, tausq_delta_update)
+# Update xi_delta (for j and m)
+update_xi_delta_BVS_NHHS_SI_MVN_cov <- function(J, M, tausq_delta_update)
 {
   # Use more informative prior (xi_delta ~ IG(15, 3))
   shape_xi_delta <- ((1/2) + 15)
@@ -380,26 +372,27 @@ update_xi_delta_BVS_HHS_SI_MVN_cov <- function(J, M, tausq_delta_update)
 }
 
 
+
 ##################################################################################
 
-# Update parameters for BVS-HHS-SI-MVN model
-fit_BVS_HHS_SI_MVN_cov <- function(niter = 6000, burn_in = 1000, thin = 5,
-                                   n, K, Y, W, n_all_par, J, M, O,
-                                   theta_init = matrix(0.5, nrow = n_all_par, ncol = K),
-                                   lambdasq_beta_init = rep(0.5, J),
-                                   tausq_beta_init = 1,
-                                   lambdasq_gamma_init = rep(0.5, M),
-                                   tausq_gamma_init = 1,
-                                   lambdasq_delta_init = rep(0.5, J*M),
-                                   tausq_delta_init = 1,
-                                   psi_beta_init = rep(0.5, J),
-                                   psi_gamma_init = rep(0.5, M),
-                                   psi_delta_init = rep(0.5, J*M),
-                                   xi_beta_init = 1, xi_gamma_init = 1,
-                                   xi_delta_init = 1,
-                                   Sigma_init = diag(K),
-                                   nu_0, Psi_0,
-                                   sigmasq_varphi = 10)
+# Update parameters for BVS-NHHS-SI-MVN-cov model
+fit_BVS_NHHS_SI_MVN_cov <- function(niter = 20, burn_in = 2, thin = 1,
+                                    n, K, Y, W, n_all_par, J, M, O,
+                                    theta_init = matrix(0.5, nrow = n_all_par, ncol = K),
+                                    lambdasq_beta_init = rep(0.5, J),
+                                    tausq_beta_init = 1,
+                                    lambdasq_gamma_init = rep(0.5, M),
+                                    tausq_gamma_init = 1,
+                                    lambdasq_delta_init = rep(0.5, J*M),
+                                    tausq_delta_init = 1,
+                                    psi_beta_init = rep(0.5, J),
+                                    psi_gamma_init = rep(0.5, M),
+                                    psi_delta_init = rep(0.5, J*M),
+                                    xi_beta_init = 1, xi_gamma_init = 1,
+                                    xi_delta_init = 1,
+                                    Sigma_init,
+                                    nu_0, Psi_0,
+                                    sigmasq_varphi = 10)
 {
   theta_update <- array(NA, dim = c(niter, n_all_par, K))
   Sigma_update <- array(NA, dim = c(niter, K, K))
@@ -450,16 +443,16 @@ fit_BVS_HHS_SI_MVN_cov <- function(niter = 6000, burn_in = 1000, thin = 5,
   {
     if (s %% 50 == 0) cat("Iteration:", s, "\n")
     # theta_update
-    theta_update_s <- update_theta_BVS_HHS_SI_MVN_cov(Y, K, W, n_all_par,
-                                                      J, M, O,
-                                                      lambdasq_beta_update = lambdasq_beta_update[(s-1), ],
-                                                      tausq_beta_update = tausq_beta_update[(s-1)],
-                                                      lambdasq_gamma_update = lambdasq_gamma_update[(s-1), ],
-                                                      tausq_gamma_update = tausq_gamma_update[(s-1)],
-                                                      lambdasq_delta_update = lambdasq_delta_update[(s-1), ],
-                                                      tausq_delta_update = tausq_delta_update[(s-1)],
-                                                      sigmasq_varphi = sigmasq_varphi,
-                                                      Sigma_update = Sigma_update[(s-1), , ]
+    theta_update_s <- update_theta_BVS_NHHS_SI_MVN_cov(Y, K, W, n_all_par,
+                                                       J, M, O,
+                                                       lambdasq_beta_update = lambdasq_beta_update[(s-1), ],
+                                                       tausq_beta_update = tausq_beta_update[(s-1)],
+                                                       lambdasq_gamma_update = lambdasq_gamma_update[(s-1), ],
+                                                       tausq_gamma_update = tausq_gamma_update[(s-1)],
+                                                       lambdasq_delta_update = lambdasq_delta_update[(s-1), ],
+                                                       tausq_delta_update = tausq_delta_update[(s-1)],
+                                                       sigmasq_varphi = sigmasq_varphi,
+                                                       Sigma_update = Sigma_update[(s-1), , ]
     )
     theta_update[s, , ] <- theta_update_s
 
@@ -475,96 +468,94 @@ fit_BVS_HHS_SI_MVN_cov <- function(niter = 6000, burn_in = 1000, thin = 5,
     delta_update[s, , ] <- delta_update_s
     varphi_update[s, , ] <- varphi_update_s
 
+
     # Sigma_update
-    Sigma_update_s <- update_Sigma_BVS_HHS_SI_MVN_cov(Y, n, W, theta_update[s, , ], Psi_0, nu_0)
+    Sigma_update_s <- update_Sigma_BVS_NHHS_SI_MVN_cov(Y, n, W, theta_update[s, , ], Psi_0, nu_0)
     Sigma_update[s, , ] <- Sigma_update_s
 
 
     # lambdasq_beta_update
-    lambdasq_beta_update_s <- update_lambdasq_beta_BVS_HHS_SI_MVN_cov(J, K,
-                                                                      beta_update = beta_update[s, , ],
-                                                                      psi_beta_update = psi_beta_update[(s-1), ],
-                                                                      tausq_beta_update = tausq_beta_update[(s-1)])
+    lambdasq_beta_update_s <- update_lambdasq_beta_BVS_NHHS_SI_MVN_cov(J, K,
+                                                                       beta_update = beta_update[s, , ],
+                                                                       psi_beta_update = psi_beta_update[(s-1), ],
+                                                                       tausq_beta_update = tausq_beta_update[(s-1)])
     lambdasq_beta_update[s, ] <- lambdasq_beta_update_s
 
 
     # lambdasq_gamma_update
-    lambdasq_gamma_update_s <- update_lambdasq_gamma_BVS_HHS_SI_MVN_cov(M, K,
-                                                                        gamma_update = gamma_update[s, , ],
-                                                                        psi_gamma_update = psi_gamma_update[(s-1), ],
-                                                                        tausq_gamma_update = tausq_gamma_update[(s-1)])
+    lambdasq_gamma_update_s <- update_lambdasq_gamma_BVS_NHHS_SI_MVN_cov(M, K,
+                                                                         gamma_update = gamma_update[s, , ],
+                                                                         psi_gamma_update = psi_gamma_update[(s-1), ],
+                                                                         tausq_gamma_update = tausq_gamma_update[(s-1)])
     lambdasq_gamma_update[s, ] <- lambdasq_gamma_update_s
 
 
     # lambdasq_delta_update
-    lambdasq_delta_update_s <- update_lambdasq_delta_BVS_HHS_SI_MVN_cov(J, M, K,
-                                                                        delta_update = delta_update[s, , ],
-                                                                        lambdasq_beta_update = lambdasq_beta_update[s, ],
-                                                                        lambdasq_gamma_update = lambdasq_gamma_update[s, ],
-                                                                        psi_delta_update = psi_delta_update[(s-1), ],
-                                                                        tausq_delta_update = tausq_delta_update[(s-1)])
+    lambdasq_delta_update_s <- update_lambdasq_delta_BVS_NHHS_SI_MVN_cov(J, M, K,
+                                                                         delta_update = delta_update[s, , ],
+                                                                         psi_delta_update = psi_delta_update[(s-1), ],
+                                                                         tausq_delta_update = tausq_delta_update[(s-1)])
     lambdasq_delta_update[s, ] <- lambdasq_delta_update_s
 
 
 
+
     # Update tausq_beta
-    tausq_beta_update_s <- update_tausq_beta_BVS_HHS_SI_MVN_cov(J, K,
-                                                                beta_update = beta_update[s, , ],
-                                                                lambdasq_beta_update = lambdasq_beta_update[s, ],
-                                                                xi_beta_update = xi_beta_update[(s-1)])
+    tausq_beta_update_s <- update_tausq_beta_BVS_NHHS_SI_MVN_cov(J, K,
+                                                                 beta_update = beta_update[s, , ],
+                                                                 lambdasq_beta_update = lambdasq_beta_update[s, ],
+                                                                 xi_beta_update = xi_beta_update[(s-1)])
     tausq_beta_update[s] <- tausq_beta_update_s
 
 
     # Update tausq_gamma
-    tausq_gamma_update_s <- update_tausq_gamma_BVS_HHS_SI_MVN_cov(M, K,
-                                                                  gamma_update = gamma_update[s, , ],
-                                                                  lambdasq_gamma_update = lambdasq_gamma_update[s, ],
-                                                                  xi_gamma_update = xi_gamma_update[(s-1)])
+    tausq_gamma_update_s <- update_tausq_gamma_BVS_NHHS_SI_MVN_cov(M, K,
+                                                                   gamma_update = gamma_update[s, , ],
+                                                                   lambdasq_gamma_update = lambdasq_gamma_update[s, ],
+                                                                   xi_gamma_update = xi_gamma_update[(s-1)])
     tausq_gamma_update[s] <- tausq_gamma_update_s
 
 
     # Update tausq_delta
-    tausq_delta_update_s <- update_tausq_delta_BVS_HHS_SI_MVN_cov(J, M, K,
-                                                                  delta_update = delta_update[s, , ],
-                                                                  lambdasq_delta_update = lambdasq_delta_update[s, ],
-                                                                  lambdasq_beta_update = lambdasq_beta_update[s, ],
-                                                                  lambdasq_gamma_update = lambdasq_gamma_update[s, ],
-                                                                  xi_delta_update = xi_delta_update[(s-1)])
+    tausq_delta_update_s <- update_tausq_delta_BVS_NHHS_SI_MVN_cov(J, M, K,
+                                                                   delta_update = delta_update[s, , ],
+                                                                   lambdasq_delta_update = lambdasq_delta_update[s, ],
+                                                                   xi_delta_update = xi_delta_update[(s-1)])
     tausq_delta_update[s] <- tausq_delta_update_s
 
 
 
     # Update psi_beta
-    psi_beta_update_s <- update_psi_beta_BVS_HHS_SI_MVN_cov(J, K,
-                                                            lambdasq_beta_update = lambdasq_beta_update[s, ])
+    psi_beta_update_s <- update_psi_beta_BVS_NHHS_SI_MVN_cov(J, K,
+                                                             lambdasq_beta_update = lambdasq_beta_update[s, ])
     psi_beta_update[s, ] <- psi_beta_update_s
 
 
     # Update psi_gamma
-    psi_gamma_update_s <- update_psi_gamma_BVS_HHS_SI_MVN_cov(M, K,
-                                                              lambdasq_gamma_update = lambdasq_gamma_update[s, ])
+    psi_gamma_update_s <- update_psi_gamma_BVS_NHHS_SI_MVN_cov(M, K,
+                                                               lambdasq_gamma_update = lambdasq_gamma_update[s, ])
     psi_gamma_update[s, ] <- psi_gamma_update_s
 
 
     # Update psi_delta
-    psi_delta_update_s <- update_psi_delta_BVS_HHS_SI_MVN_cov(J, M, K,
-                                                              lambdasq_delta_update = lambdasq_delta_update[s, ])
+    psi_delta_update_s <- update_psi_delta_BVS_NHHS_SI_MVN_cov(J, M, K,
+                                                               lambdasq_delta_update = lambdasq_delta_update[s, ])
     psi_delta_update[s, ] <- psi_delta_update_s
 
 
 
     # Update xi_beta
-    xi_beta_update_s <- update_xi_beta_BVS_HHS_SI_MVN_cov(J, tausq_beta_update = tausq_beta_update[s])
+    xi_beta_update_s <- update_xi_beta_BVS_NHHS_SI_MVN_cov(J, tausq_beta_update = tausq_beta_update[s])
     xi_beta_update[s] <- xi_beta_update_s
 
 
     # Update xi_gamma
-    xi_gamma_update_s <- update_xi_gamma_BVS_HHS_SI_MVN_cov(M, tausq_gamma_update = tausq_gamma_update[s])
+    xi_gamma_update_s <- update_xi_gamma_BVS_NHHS_SI_MVN_cov(M, tausq_gamma_update = tausq_gamma_update[s])
     xi_gamma_update[s] <- xi_gamma_update_s
 
 
     # Update xi_delta
-    xi_delta_update_s <- update_xi_delta_BVS_HHS_SI_MVN_cov(J, M, tausq_delta_update = tausq_delta_update[s])
+    xi_delta_update_s <- update_xi_delta_BVS_NHHS_SI_MVN_cov(J, M, tausq_delta_update = tausq_delta_update[s])
     xi_delta_update[s] <- xi_delta_update_s
   }
 
@@ -590,6 +581,8 @@ fit_BVS_HHS_SI_MVN_cov <- function(niter = 6000, burn_in = 1000, thin = 5,
   )
   return(results)
 }
-################################################################
+
+
+#######################################################
 
 

@@ -84,7 +84,8 @@ Sigma_init <- rinvwishart(nu_0, Psi_0)
 start_time_BVS_HHS_MVN_cov <- Sys.time()
 res_all_par_BVS_HHS_MVN_cov <- fit_BVS_HHS_MVN_cov(
   niter = 6000, burn_in = 1000, thin = 5,
-  n, K, Y, W, n_all_par, J, M, O,
+  n = n, K = K, Y = Y, W = W,
+  n_all_par = n_all_par, J = J, M = M, O = O,
   theta_init = matrix(0.5, nrow = n_all_par, ncol = K),
   lambdasq_beta_init = matrix(0.5, nrow = J, ncol = K),
   tausq_beta_init = rep(1, J),

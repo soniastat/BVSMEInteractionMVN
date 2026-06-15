@@ -1,41 +1,31 @@
 
-# Testing codes for BVS-NHHS-MVN-cov
+# Testing codes for BVS-HRHS-MVN-cov
 
-#!/usr/bin/env Rscript
+sample_id <- as.numeric(Sys.getenv('SLURM_ARRAY_TASK_ID'))
 
-args <- commandArgs(trailingOnly = TRUE)
+cat("Running sample:", sample_id, "\n")
 
-sample <- as.numeric(args[1])
+###################################################
 
-cat("Running sample:", sample, "\n")
+source("/projects/soniast@colostate.edu/alpine_sim_HRHS.R")
 
 
-suppressPackageStartupMessages({
-  library(BVSMEInteractionMVN)
-  library(LaplacesDemon)
-  library(tidyverse)
-  library(readxl)
-})
+
+library(LaplacesDemon)
+library(tidyverse)
+library(readxl)
+
 
 ############################
 # Load data
 ############################
 
-load("exposome.RData")
-load("modifiers_covariates.rda")
-load("exposures.rda")
+load("/projects/soniast@colostate.edu/exposome.RData")
+load("/projects/soniast@colostate.edu/modifiers_covariates.rda")
+load("/projects/soniast@colostate.edu/exposures.rda")
+load("/projects/soniast@colostate.edu/cov_base_post.rda")
 
-covariates_post <- codebook %>%
-  filter(domain=="Covariates" & period=="Postnatal") %>%
-  pull(variable_name) %>%
-  as.character()
 
-covariates_post <- covariates_post[
-  covariates_post %in%
-    c("hs_c_height_None","hs_c_weight_None")
-]
-
-cov_base_post <- covariates[,covariates_post]
 
 raw_Y <- cbind(
   phenotype[,5:6],
@@ -49,7 +39,6 @@ Z <- cbind(
   Metals_Postnatal
 )
 
-
 K <- dim(Y0)[2]
 n <- nrow(Y0)
 J <- ncol(X)
@@ -60,10 +49,7 @@ O <- ncol(D)
 # Simulate one dataset
 ############################
 
-set.seed(23444 + sample)
-if(is.na(sample)){
-  stop("Sample number missing")
-}
+set.seed(23444 + sample_id)
 
 sim_data <- Sim_data_BVS_real(K=K, n=n, J=J, M=M,
                               O=O, x=X, z=Z, d=D)
@@ -82,18 +68,23 @@ nu_0 <- K + 2
 Psi_0 <- diag(K)
 Sigma_init <- rinvwishart(nu_0, Psi_0)
 
+
+
+
+
 ############################
 # Fit model
 ############################
 
-set.seed(765878 + sample)
+set.seed(765878 + sample_id)
 
 theta_update_save <- tryCatch({
 
-  res <- fit_BVS_NHHS_MVN_cov(
+  res <- fit_BVS_HRHS_MVN_cov(
     niter = 6000, burn_in = 1000, thin = 5,
-    n=n, K=K, Y=Y, W=W, n_all_par=n_all_par,
-    J=J, M=M, O=O,
+    n = n, K = K, Y = Y, W = W,
+    n_all_par = n_all_par, J = J, M = M, O = O,
+    c = 2.5,
     theta_init = matrix(0.5, nrow = n_all_par, ncol = K),
     lambdasq_beta_init = matrix(0.5, nrow = J, ncol = K),
     tausq_beta_init = rep(1, J),
@@ -108,7 +99,17 @@ theta_update_save <- tryCatch({
     xi_delta_init = 1,
     Sigma_init = Sigma_init,
     nu_0 = nu_0, Psi_0 = Psi_0,
-    sigmasq_varphi = 10)
+    omegasq_beta_lambdasq = 0.25, omegasq_beta_tausq = 0.25,
+    omegasq_gamma_lambdasq = 0.25, omegasq_gamma_tausq = 0.25,
+    omegasq_delta_lambdasq = 0.25, omegasq_delta_tausq = 0.25,
+    accept_lambdasq_beta_init = matrix(1, nrow = J, ncol = K),
+    accept_tausq_beta_init = rep(1, times = J),
+    accept_lambdasq_gamma_init = matrix(1, nrow = M, ncol = K),
+    accept_tausq_gamma_init = rep(1, times = M),
+    accept_lambdasq_delta_init = matrix(1, nrow = J*M, ncol = K),
+    accept_tausq_delta_init = rep(1, times = M),
+    sigmasq_varphi = 10
+  )
 
   res$theta_update
 
@@ -116,49 +117,24 @@ theta_update_save <- tryCatch({
   list(
     error=TRUE,
     message=e$message,
-    sample=sample
+    sample_id=sample_id
   )
 
 })
 
-dir.create("results", recursive=TRUE, showWarnings=FALSE)
 
-outfile <- paste0("results/NHHS_cov_sample_", sample, ".rds")
+
+
+dir.create("/projects/soniast@colostate.edu/results_HRHS", recursive=TRUE, showWarnings=FALSE)
+
+outfile <- paste0("/projects/soniast@colostate.edu/results_HRHS/HRHS_cov_sample_", sample_id, ".rds")
 
 saveRDS(theta_update_save, file=outfile)
 
-cat("Finished sample", sample, "\n")
+cat("Finished sample", sample_id, "\n")
 
 
 
 
 
 
-# files <- list.files(
-#   "results",
-#   pattern = "\\.rds$",
-#   full.names = TRUE
-# )
-#
-# files <- files[!grepl("theta_update_list", files)]
-#
-#
-#
-# theta_update_list <- lapply(files, readRDS)
-# length(theta_update_list)
-#
-#
-# saveRDS(
-#   theta_update_list,
-#   file = "results/theta_update_NHHS_cov_list.rds"
-# )
-#
-#
-# # in terminal from this location, run these
-#
-# # cd /Users/sonia/Desktop/Packages/BVSMEInteractionMVN
-#
-# # seq 1 100 | xargs -n 1 -P 5 Rscript run_one_sample_NHHS_cov.R
-#
-#
-#

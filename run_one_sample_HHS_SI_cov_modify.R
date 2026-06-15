@@ -1,5 +1,5 @@
 
-# Testing codes for BVS-HHS-MVN-cov
+# run in terminal BVS-HHS-SI-MVN-cov
 
 #!/usr/bin/env Rscript
 
@@ -61,10 +61,6 @@ O <- ncol(D)
 ############################
 
 set.seed(23444 + sample)
-if(is.na(sample)){
-  stop("Sample number missing")
-}
-
 sim_data <- Sim_data_BVS_real(K=K, n=n, J=J, M=M,
                               O=O, x=X, z=Z, d=D)
 
@@ -86,28 +82,27 @@ Sigma_init <- rinvwishart(nu_0, Psi_0)
 # Fit model
 ############################
 
-
 set.seed(765878 + sample)
-
 theta_update_save <- tryCatch({
-
-  res <- fit_BVS_HHS_MVN_cov(niter=6000, burn_in=1000, thin=5,
-           n=n, K=K, Y=Y, W=W, n_all_par=n_all_par,
-           J=J, M=M, O=O,
-           theta_init=matrix(0.5, nrow=n_all_par, ncol=K),
-           lambdasq_beta_init=matrix(0.5, J, K),
-           tausq_beta_init=rep(1,J),
-           lambdasq_gamma_init=matrix(0.5, M, K),
-           tausq_gamma_init=rep(1,M),
-           lambdasq_delta_init=matrix(0.5, J*M, K),
-           tausq_delta_init=rep(1,J*M),
-           psi_beta_init=matrix(0.5, J, K),
-           psi_gamma_init=matrix(0.5, M, K),
-           psi_delta_init=matrix(0.5, J*M, K),
-           xi_beta_init=1, xi_gamma_init=1,
-           xi_delta_init=1, Sigma_init=Sigma_init,
-           nu_0=nu_0, Psi_0=Psi_0,
-           sigmasq_varphi=10)
+  res <- fit_BVS_HHS_SI_MVN_cov_modify(
+    niter = 6000, burn_in = 1000, thin = 5,
+    n=n, K=K, Y=Y, W=W, n_all_par=n_all_par,
+    J=J, M=M, O=O,
+    theta_init = matrix(0.5, nrow = n_all_par, ncol = K),
+    lambdasq_beta_init = rep(0.5, J),
+    tausq_beta_init = 1,
+    lambdasq_gamma_init = rep(0.5, M),
+    tausq_gamma_init = 1,
+    lambdasq_delta_init = rep(0.5, J*M),
+    tausq_delta_init = 1,
+    psi_beta_init = rep(0.5, J),
+    psi_gamma_init = rep(0.5, M),
+    psi_delta_init = rep(0.5, J*M),
+    xi_beta_init = 1, xi_gamma_init = 1,
+    xi_delta_init = 1,
+    Sigma_init = Sigma_init,
+    nu_0 = nu_0, Psi_0 = Psi_0,
+    sigmasq_varphi = 10)
 
   res$theta_update
 
@@ -120,9 +115,9 @@ theta_update_save <- tryCatch({
 
 })
 
-dir.create("results", recursive=TRUE, showWarnings=FALSE)
+dir.create("results_HHS_SI_modify", recursive=TRUE, showWarnings=FALSE)
 
-outfile <- paste0("results/HHS_cov_sample_", sample, ".rds")
+outfile <- paste0("results_HHS_SI_modify/modify_HHS_SI_cov_sample_", sample, ".rds")
 
 saveRDS(theta_update_save, file=outfile)
 
@@ -149,16 +144,15 @@ cat("Finished sample", sample, "\n")
 #
 # saveRDS(
 #   theta_update_list,
-#   file = "results/theta_update_HHS_list.rds"
+#   file = "results_modify/theta_update_HHS_SI_cov_list.rds"
 # )
-#
 #
 #
 # # in terminal from this location, run these
 #
 # # cd /Users/sonia/Desktop/Packages/BVSMEInteractionMVN
 #
-# # seq 1 100 | xargs -n 1 -P 5 Rscript run_one_sample_HHS_cov.R
+# # seq 1 100 | xargs -n 1 -P 5 Rscript run_one_sample_HHS_SI_cov_modify.R
 #
 #
 #

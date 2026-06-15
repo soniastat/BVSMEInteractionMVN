@@ -77,7 +77,7 @@ Sim_data_BVS_real <- function(K = 4, n = 1000, J = 44, M = 17, O = 6,
 ########################################################
 
 # Update theta
-update_theta_NP_MVN_cov <- function(Y, K, W, n_all_par, J, M, O,
+update_theta_NP_MVN_cov_rnorm <- function(Y, K, W, WTW, n_all_par, J, M, O,
                                     sigmasq_varphi, Sigma_update)
 {
 
@@ -90,26 +90,37 @@ update_theta_NP_MVN_cov <- function(Y, K, W, n_all_par, J, M, O,
   vec_sigmasq_varphi <- rep(sigmasq_varphi, times = O)
   mat_var_varphi <- diag(vec_sigmasq_varphi)
 
-  V_theta <- as.matrix(bdiag(var_alpha_0, var_beta, var_gamma,
-                             var_delta, mat_var_varphi))
+  # Inverse using blocks separately
+  V_theta_inv_block <- as.matrix(
+    bdiag(
+      solve(var_alpha_0),
+      solve(var_beta),
+      solve(var_gamma),
+      solve(var_delta),
+      solve(mat_var_varphi)
+    )
+  )
 
   # prior precision
-  V_theta_inv <- chol2inv(chol(V_theta))
-  prior_prec <- kronecker(Diagonal(K), V_theta_inv)  # I_K ⊗ Vθ⁻¹
+  prior_prec <- kronecker(Diagonal(K), V_theta_inv_block)  # I_K ⊗ Vθ⁻¹
 
   # Kronecker term from likelihood
   Sigma_inv <- as.matrix(chol2inv(chol(Sigma_update)))
-  kron_term <- kronecker(Sigma_inv, t(W) %*% W)  # Σ⁻¹ ⊗ WᵀW
+  # Sigma_inv <- as.matrix(chol2inv(chol(Sigma_init)))
+  kron_term <- kronecker(Sigma_inv, WTW)  # Σ⁻¹ ⊗ WᵀW
 
+  kr_pr <- kron_term + prior_prec
   # Full conditional covariance
-  Sigma_theta <- chol2inv(chol(kron_term + prior_prec))
+  Sigma_theta <- chol2inv(chol(kr_pr))
+  R <- chol(Sigma_theta) # right triangular R^TR = Sigma_theta
 
   # Full conditional mean
   vecY <- as.vector(Y)
   mean_theta_vec <- Sigma_theta %*% (kronecker(Sigma_inv, t(W)) %*% vecY)
 
-  # Sample from MVN
-  theta_vec <- mvrnorm(1, mu = mean_theta_vec, Sigma = Sigma_theta)
+
+  z_norm <- rnorm(length(mean_theta_vec))
+  theta_vec <- as.vector(mean_theta_vec + t(R) %*% z_norm)
   # Reshape back to n_all_par x K
   theta_update_s <- matrix(theta_vec, nrow = n_all_par, ncol = K)
 
@@ -140,10 +151,10 @@ update_Sigma_NP_MVN_cov <- function(Y, n, W, theta_update, Psi_0, nu_0)
 #######################################################################################
 
 # Update parameters for NP-MVN-cov model
-fit_NP_MVN_cov <- function(niter = 20, burn_in = 2, thin = 1,
-                           n, K, Y, W, n_all_par, J, M, O,
+fit_NP_MVN_cov_rnorm <- function(niter = 20, burn_in = 2, thin = 1,
+                           n, K, Y, W, WTW, n_all_par, J, M, O,
                            theta_init = matrix(0.5, nrow = n_all_par, ncol = K),
-                           Sigma_init = matrix(0.5, nrow = K, ncol = K),
+                           Sigma_init = diag(K),
                            nu_0, Psi_0,
                            sigmasq_varphi = 10)
 {
@@ -158,7 +169,7 @@ fit_NP_MVN_cov <- function(niter = 20, burn_in = 2, thin = 1,
   {
     if (s %% 50 == 0) cat("Iteration:", s, "\n")
     # theta_update
-    theta_update_s <- update_theta_NP_MVN_cov(Y, K, W, n_all_par, J, M, O,
+    theta_update_s <- update_theta_NP_MVN_cov_rnorm(Y, K, W, WTW, n_all_par, J, M, O,
                                               sigmasq_varphi = sigmasq_varphi,
                                               Sigma_update = Sigma_update[(s-1), , ]
     )
