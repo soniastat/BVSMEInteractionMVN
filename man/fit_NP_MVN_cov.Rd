@@ -17,7 +17,7 @@ fit_NP_MVN_cov(
   M,
   O,
   theta_init = matrix(0.5, nrow = n_all_par, ncol = K),
-  Sigma_init = matrix(0.5, nrow = K, ncol = K),
+  Sigma_init = diag(K),
   nu_0,
   Psi_0,
   sigmasq_varphi = 10

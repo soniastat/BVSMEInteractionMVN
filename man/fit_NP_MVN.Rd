@@ -16,7 +16,7 @@ fit_NP_MVN(
   J,
   M,
   theta_init = matrix(0.5, nrow = n_all_par, ncol = K),
-  Sigma_init = matrix(0.5, nrow = K, ncol = K),
+  Sigma_init = diag(K),
   nu_0,
   Psi_0
 )
