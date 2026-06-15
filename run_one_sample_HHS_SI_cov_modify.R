@@ -71,6 +71,7 @@ u <- sim_data$u
 d <- sim_data$d
 
 W <- cbind(1, x, z, u, d)
+WTW <- t(W) %*% W
 
 n_all_par <- ncol(W)
 
@@ -86,7 +87,7 @@ set.seed(765878 + sample)
 theta_update_save <- tryCatch({
   res <- fit_BVS_HHS_SI_MVN_cov_modify(
     niter = 6000, burn_in = 1000, thin = 5,
-    n=n, K=K, Y=Y, W=W, n_all_par=n_all_par,
+    n=n, K=K, Y=Y, W=W, WTW=WTW, n_all_par=n_all_par,
     J=J, M=M, O=O,
     theta_init = matrix(0.5, nrow = n_all_par, ncol = K),
     lambdasq_beta_init = rep(0.5, J),
