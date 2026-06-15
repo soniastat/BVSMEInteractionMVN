@@ -342,7 +342,7 @@ update_xi_delta_BVS_HHS_SI_MVN_cov <- function(J, M, tausq_delta_update)
 
 ##################################################################################
 
-#' Update parameters for BVS-HHS-SI-MVN model
+#' Update parameters for BVS-HHS-SI-MVN-modify model
 #' @export
 fit_BVS_HHS_SI_MVN_cov_modify <- function(niter = 6000, burn_in = 1000, thin = 5,
                                           n, K, Y, W, WTW, n_all_par, J, M, O,
