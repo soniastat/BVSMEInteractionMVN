@@ -2,7 +2,7 @@
 % Please edit documentation in R/fit_BVS_HHS_SI_MVN_cov_modify.R
 \name{fit_BVS_HHS_SI_MVN_cov_modify}
 \alias{fit_BVS_HHS_SI_MVN_cov_modify}
-\title{Update parameters for BVS-HHS-SI-MVN model}
+\title{Update parameters for BVS-HHS-SI-MVN-modify model}
 \usage{
 fit_BVS_HHS_SI_MVN_cov_modify(
   niter = 6000,
@@ -37,5 +37,5 @@ fit_BVS_HHS_SI_MVN_cov_modify(
 )
 }
 \description{
-Update parameters for BVS-HHS-SI-MVN model
+Update parameters for BVS-HHS-SI-MVN-modify model
 }
