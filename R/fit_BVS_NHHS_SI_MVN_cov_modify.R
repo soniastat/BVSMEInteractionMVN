@@ -37,39 +37,47 @@ update_theta_BVS_NHHS_SI_MVN_cov_modify <- function(Y, K, W, WTW, n_all_par,
    sigmasq_delta_update <- lambdasq_delta_update * tausq_delta_update
 
 
-  # Build V_theta (same for all k)
-  mat_var_alpha <- matrix(100, nrow = 1, ncol = 1)
-  var_beta <- diag(sigmasq_beta_update)
-  var_gamma <- diag(sigmasq_gamma_update)
-  var_delta <- diag(sigmasq_delta_update)
+   # Build V_theta (same for all k)
+   var_alpha_0 <- 100
+   var_beta <- diag(sigmasq_beta_update)
+   var_gamma <- diag(sigmasq_gamma_update)
+   var_delta <- diag(sigmasq_delta_update)
 
-  vec_sigmasq_varphi <- rep(sigmasq_varphi, times = O)
-  mat_var_varphi <- diag(vec_sigmasq_varphi)
+   vec_sigmasq_varphi <- rep(sigmasq_varphi, times = O)
+   mat_var_varphi <- diag(vec_sigmasq_varphi)
 
-  # Inverse using blocks separately
-  V_theta_inv_block <- as.matrix(
-    bdiag(
-      solve(mat_var_alpha),
-      solve(var_beta),
-      solve(var_gamma),
-      solve(var_delta),
-      solve(mat_var_varphi)
-    )
-  )
+   # Inverse using blocks separately
+   V_theta_inv_block <- as.matrix(
+     bdiag(
+       solve(var_alpha_0),
+       solve(var_beta),
+       solve(var_gamma),
+       solve(var_delta),
+       solve(mat_var_varphi)
+     )
+   )
 
-  prior_prec <- kronecker(Diagonal(K), V_theta_inv_block)  # I_K ⊗ Vθ⁻¹
+   # prior precision
+   prior_prec <- kronecker(Diagonal(K), V_theta_inv_block)  # I_K ⊗ Vθ⁻¹
 
-  Sigma_inv <- as.matrix(chol2inv(chol(Sigma_update)))
-  kron_term <- kronecker(Sigma_inv, WTW)  # Σ⁻¹ ⊗ WᵀW
+   # Kronecker term from likelihood
+   Sigma_inv <- as.matrix(chol2inv(chol(Sigma_update)))
+   # Sigma_inv <- as.matrix(chol2inv(chol(Sigma_init)))
+   kron_term <- kronecker(Sigma_inv, WTW)  # Σ⁻¹ ⊗ WᵀW
 
-  vecY <- as.vector(Y)
-  Q <- kron_term + prior_prec
-  b <- kronecker(Sigma_inv, t(W)) %*% vecY
+   kr_pr <- kron_term + prior_prec
+   # Full conditional covariance
+   Sigma_theta <- chol2inv(chol(kr_pr))
+   R <- chol(Sigma_theta) # right triangular R^TR = Sigma_theta
 
-  R <- chol(Q)
-  mu_theta <- backsolve(R, forwardsolve(t(R), b))
-  theta_vec <- mu_theta + backsolve(R, rnorm(length(b)))
-  # Reshape back to n_all_par x K
+   # Full conditional mean
+   vecY <- as.vector(Y)
+   mean_theta_vec <- Sigma_theta %*% (kronecker(Sigma_inv, t(W)) %*% vecY)
+
+
+   z_norm <- rnorm(length(mean_theta_vec))
+   theta_vec <- as.vector(mean_theta_vec + t(R) %*% z_norm)
+   # Reshape back to n_all_par x K
   theta_update_s <- matrix(theta_vec, nrow = n_all_par, ncol = K)
 
   return(theta_update_s)
