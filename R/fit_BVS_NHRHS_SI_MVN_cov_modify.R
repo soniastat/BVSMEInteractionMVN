@@ -32,7 +32,7 @@ NULL
 ####################################################################################
 
 # Update theta
-update_theta_BVS_NHRHS_SI_MVN_cov <- function(Y, K, W, WTW, n_all_par,
+update_theta_BVS_NHRHS_SI_MVN_cov_modify <- function(Y, K, W, WTW, n_all_par,
                          J, M, O,
                          c,
                          lambdasq_beta_update, tausq_beta_update,
