@@ -4,7 +4,7 @@
 \alias{Sim_data_BVS_real}
 \title{Smulate data}
 \usage{
-Sim_data_BVS_real(K = 5, n = 1000, J = 44, M = 17, O = 6, x, z, d)
+Sim_data_BVS_real(K = 5, n = 1000, J = 44, M = 17, O = 6, x, z, d, Sigma)
 }
 \description{
 Smulate data

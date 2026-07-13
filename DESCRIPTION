@@ -1,7 +1,7 @@
 Package: BVSMEInteractionMVN
 Type: Package
 Title: Bayesian Variable Selection for Modifier-Environment Interaction with Hierarchical Horseshoe Priors for Multivariate Normal Models
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: c(
     person(
       "Sonia", "Khatun",
@@ -16,9 +16,6 @@ License: CSU + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports:
-    MASS,
-    mvtnorm,
-    BayesLogit,
     actuar,
     Matrix,
     greybox,
