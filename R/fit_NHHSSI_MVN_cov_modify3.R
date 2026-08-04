@@ -7,9 +7,17 @@
 # Matrix
 #' @importFrom Matrix bdiag Diagonal chol2inv
 
+# MASS
+#' @importFrom MASS mvrnorm
+
+# mvtnorm
+#' @importFrom mvtnorm dmvnorm
+
 # invwishart
 #' @importFrom LaplacesDemon rinvwishart
 
+# folded normal
+#' @importFrom greybox rfnorm
 
 NULL
 
@@ -297,8 +305,6 @@ update_xi_delta_NHHSSI_MVN_cov <- function(J, M, tausq_delta_update)
 
 
 
-
-
 ##################################################################################
 
 #' Update parameters for NHHSSI-MVN-cov model
@@ -513,5 +519,8 @@ fit_NHHSSI_MVN_cov_modify3 <- function(niter = 20, burn_in = 2, thin = 1,
 
 
 #######################################################
+
+
+
 
 

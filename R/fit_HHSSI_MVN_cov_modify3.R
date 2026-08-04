@@ -9,9 +9,17 @@
 # Matrix
 #' @importFrom Matrix bdiag Diagonal chol2inv
 
+# MASS
+#' @importFrom MASS mvrnorm
+
+# mvtnorm
+#' @importFrom mvtnorm dmvnorm
+
 # invwishart
 #' @importFrom LaplacesDemon rinvwishart
 
+# folded normal
+#' @importFrom greybox rfnorm
 
 NULL
 
@@ -527,4 +535,5 @@ fit_HHSSI_MVN_cov_modify3 <- function(niter = 6000, burn_in = 1000, thin = 5,
 
 
 ###########################################################
+
 

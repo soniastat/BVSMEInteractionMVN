@@ -10,17 +10,12 @@ gc()
 devtools::load_all()
 
 library(LaplacesDemon) # IW
-library(ggplot2) # plot
 
 #######################################################
 
 # real data
 options(echo=TRUE)
 options(stringsAsFactors = FALSE)
-
-
-library(tidyverse)
-library(readxl)
 
 
 load("exposome.RData")
@@ -93,6 +88,7 @@ end_time_NP_MVN_cov <- Sys.time()
 end_time_NP_MVN_cov - start_time_NP_MVN_cov
 
 
+
 # save(res_all_par_NP_MVN_cov, file = "exposome_data_analysis/res_n1301_O6_M34_J44_K5_6000ite_1000burn_5thin_NPMVN_modify3.rda")
 # load(file = "exposome_data_analysis/res_n1301_O6_M34_J44_K5_6000ite_1000burn_5thin_NPMVN_modify3.rda")
 
@@ -100,7 +96,7 @@ end_time_NP_MVN_cov - start_time_NP_MVN_cov
 
 start_time_NP_MVN_cov_chain2 <- Sys.time()
 set.seed(453567)
-res_all_par_NP_MVN_cov_chain2 <- fit_NP_MVN_cov(
+res_all_par_NP_MVN_cov_chain2 <- fit_NP_MVN_cov3(
   niter = 6000, burn_in = 1000, thin = 5,
   n=n, K=K, Y=Y, W=W, WTW=WTW, n_all_par=n_all_par,
   J=J, M=M, O=O,
@@ -122,7 +118,7 @@ end_time_NP_MVN_cov_chain2 - start_time_NP_MVN_cov_chain2
 
 start_time_NP_MVN_cov_chain3 <- Sys.time()
 set.seed(98765453)
-res_all_par_NP_MVN_cov_chain3 <- fit_NP_MVN_cov(
+res_all_par_NP_MVN_cov_chain3 <- fit_NP_MVN_cov3(
   niter = 6000, burn_in = 1000, thin = 5,
   n=n, K=K, Y=Y, W=W, WTW=WTW, n_all_par=n_all_par,
   J=J, M=M, O=O,

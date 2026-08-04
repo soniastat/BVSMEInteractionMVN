@@ -1,6 +1,7 @@
 
-# Testing codes for Bayesian variable selection with hierarchical Horseshoe priors
-# for multivariate normal response (HHS-MVN-cov)
+
+# Testing codes for Bayesian variable selection with hierarchical regularized Horseshoe priors
+# for multivariate normal response (HRHS-MVN-cov)
 
 rm(list = ls())
 gc()
@@ -11,6 +12,7 @@ gc()
 devtools::load_all()
 
 library(LaplacesDemon) # IW
+
 
 #######################################################
 
@@ -69,15 +71,15 @@ nu_0 <- K + 2
 Psi_0 <- diag(K)
 Sigma_init <- rinvwishart(nu_0, Psi_0)
 
-
 ######################################################
-# Fit the HHS-MVN-cov model on real data
+# Fit the HRHS-MVN-cov model
 
-start_time_HHS_MVN_cov <- Sys.time()
-res_all_par_HHS_MVN_cov <- fit_HHS_MVN_cov_modify3(
+start_time_HRHS_MVN_cov <- Sys.time()
+res_all_par_HRHS_MVN_cov <- fit_HRHS_MVN_cov_modify3(
   niter = 6000, burn_in = 1000, thin = 5,
-  n = n, K = K, Y = Y, W = W, WTW = WTW,
+  n=n, K=K, Y=Y, W=W,  WTW = WTW,
   n_all_par = n_all_par, J = J, M = M, O = O,
+  c = 2.5,
   sigmasq_alpha = 100,
   theta_init = matrix(0.5, nrow = n_all_par, ncol = K),
   lambdasq_beta_init = matrix(0.5, nrow = J, ncol = K),
@@ -93,23 +95,33 @@ res_all_par_HHS_MVN_cov <- fit_HHS_MVN_cov_modify3(
   xi_delta_init = 1,
   Sigma_init = Sigma_init,
   nu_0 = nu_0, Psi_0 = Psi_0,
+  omegasq_beta_lambdasq = 0.25, omegasq_beta_tausq = 0.25,
+  omegasq_gamma_lambdasq = 0.25, omegasq_gamma_tausq = 0.25,
+  omegasq_delta_lambdasq = 0.25, omegasq_delta_tausq = 0.25,
+  accept_lambdasq_beta_init = matrix(1, nrow = J, ncol = K),
+  accept_tausq_beta_init = rep(1, times = J),
+  accept_lambdasq_gamma_init = matrix(1, nrow = M, ncol = K),
+  accept_tausq_gamma_init = rep(1, times = M),
+  accept_lambdasq_delta_init = matrix(1, nrow = J*M, ncol = K),
+  accept_tausq_delta_init = rep(1, times = M),
   sigmasq_varphi = 10
 )
-end_time_HHS_MVN_cov <- Sys.time()
-end_time_HHS_MVN_cov - start_time_HHS_MVN_cov
+end_time_HRHS_MVN_cov <- Sys.time()
+end_time_HRHS_MVN_cov - start_time_HRHS_MVN_cov
 
-# save(res_all_par_HHS_MVN_cov, file = "exposome_data_analysis/res_n1301_O6_M34_J44_K5_6000ite_1000burn_5thin_HHSMVN_modify3.rda")
-# load(file = "exposome_data_analysis/res_n1301_O6_M34_J44_K5_6000ite_1000burn_5thin_HHSMVN_modify3.rda")
+# save(res_all_par_HRHS_MVN_cov, file = "exposome_data_analysis/res_n1301_O6_M34_J44_K5_6000ite_1000burn_5thin_HRHSMVN_modify3.rda")
+# load(file = "exposome_data_analysis/res_n1301_O6_M34_J44_K5_6000ite_1000burn_5thin_HRHSMVN_modify3.rda")
 
 
 #######################################################
 
-start_time_HHS_MVN_cov_chain2 <- Sys.time()
+start_time_HRHS_MVN_cov_chain2 <- Sys.time()
 set.seed(453567)
-res_all_par_HHS_MVN_cov_chain2 <- fit_HHS_MVN_cov_modify3(
+res_all_par_HRHS_MVN_cov_chain2 <- fit_HRHS_MVN_cov_modify3(
   niter = 6000, burn_in = 1000, thin = 5,
-  n = n, K = K, Y = Y, W = W, WTW = WTW,
+  n=n, K=K, Y=Y, W=W,  WTW = WTW,
   n_all_par = n_all_par, J = J, M = M, O = O,
+  c = 2.5,
   sigmasq_alpha = 100,
   theta_init = matrix(-5, nrow = n_all_par, ncol = K),
   lambdasq_beta_init = matrix(0.15, nrow = J, ncol = K),
@@ -125,31 +137,41 @@ res_all_par_HHS_MVN_cov_chain2 <- fit_HHS_MVN_cov_modify3(
   xi_delta_init = .1,
   Sigma_init = Sigma_init,
   nu_0 = nu_0, Psi_0 = Psi_0,
+  omegasq_beta_lambdasq = 0.25, omegasq_beta_tausq = 0.25,
+  omegasq_gamma_lambdasq = 0.25, omegasq_gamma_tausq = 0.25,
+  omegasq_delta_lambdasq = 0.25, omegasq_delta_tausq = 0.25,
+  accept_lambdasq_beta_init = matrix(1, nrow = J, ncol = K),
+  accept_tausq_beta_init = rep(1, times = J),
+  accept_lambdasq_gamma_init = matrix(1, nrow = M, ncol = K),
+  accept_tausq_gamma_init = rep(1, times = M),
+  accept_lambdasq_delta_init = matrix(1, nrow = J*M, ncol = K),
+  accept_tausq_delta_init = rep(1, times = M),
   sigmasq_varphi = 10
 )
-end_time_HHS_MVN_cov_chain2 <- Sys.time()
-end_time_HHS_MVN_cov_chain2 - start_time_HHS_MVN_cov_chain2
+end_time_HRHS_MVN_cov_chain2 <- Sys.time()
+end_time_HRHS_MVN_cov_chain2 - start_time_HRHS_MVN_cov_chain2
 
 
-# save(res_all_par_HHS_MVN_cov_chain2, file = "exposome_data_analysis/res_n1301_O6_M34_J44_K5_6000ite_1000burn_5thin_HHSMVN_modify3_chain2.rda")
-# load(file = "exposome_data_analysis/res_n1301_O6_M34_J44_K5_6000ite_1000burn_5thin_HHSMVN_modify3_chain2.rda")
+# save(res_all_par_HRHS_MVN_cov_chain2, file = "exposome_data_analysis/res_n1301_O6_M34_J44_K5_6000ite_1000burn_5thin_HRHSMVN_modify3_chain2.rda")
+# load(file = "exposome_data_analysis/res_n1301_O6_M34_J44_K5_6000ite_1000burn_5thin_HRHSMVN_modify3_chain2.rda")
 
 #######################################################
 
-start_time_HHS_MVN_cov_chain3 <- Sys.time()
+start_time_HRHS_MVN_cov_chain3 <- Sys.time()
 set.seed(98765453)
-res_all_par_HHS_MVN_cov_chain3 <- fit_HHS_MVN_cov_modify3(
+res_all_par_HRHS_MVN_cov_chain3 <- fit_HRHS_MVN_cov_modify3(
   niter = 6000, burn_in = 1000, thin = 5,
-  n = n, K = K, Y = Y, W = W, WTW = WTW,
+  n=n, K=K, Y=Y, W=W,  WTW = WTW,
   n_all_par = n_all_par, J = J, M = M, O = O,
+  c = 2.5,
   sigmasq_alpha = 100,
   theta_init = matrix(5, nrow = n_all_par, ncol = K),
   lambdasq_beta_init = matrix(5, nrow = J, ncol = K),
-  tausq_beta_init = rep(3, J),
+  tausq_beta_init = rep(5, J),
   lambdasq_gamma_init = matrix(5, nrow = M, ncol = K),
-  tausq_gamma_init = rep(3, M),
+  tausq_gamma_init = rep(5, M),
   lambdasq_delta_init = matrix(5, nrow = J*M, ncol = K),
-  tausq_delta_init = rep(3, J*M),
+  tausq_delta_init = rep(5, J*M),
   psi_beta_init = matrix(5, nrow = J, ncol = K),
   psi_gamma_init = matrix(5, nrow = M, ncol = K),
   psi_delta_init = matrix(5, nrow = J*M, ncol = K),
@@ -157,23 +179,25 @@ res_all_par_HHS_MVN_cov_chain3 <- fit_HHS_MVN_cov_modify3(
   xi_delta_init = 5,
   Sigma_init = Sigma_init,
   nu_0 = nu_0, Psi_0 = Psi_0,
+  omegasq_beta_lambdasq = 5, omegasq_beta_tausq = 5,
+  omegasq_gamma_lambdasq = 5, omegasq_gamma_tausq = 5,
+  omegasq_delta_lambdasq = 5, omegasq_delta_tausq = 5,
+  accept_lambdasq_beta_init = matrix(1, nrow = J, ncol = K),
+  accept_tausq_beta_init = rep(1, times = J),
+  accept_lambdasq_gamma_init = matrix(1, nrow = M, ncol = K),
+  accept_tausq_gamma_init = rep(1, times = M),
+  accept_lambdasq_delta_init = matrix(1, nrow = J*M, ncol = K),
+  accept_tausq_delta_init = rep(1, times = M),
   sigmasq_varphi = 10
 )
-end_time_HHS_MVN_cov_chain3 <- Sys.time()
-end_time_HHS_MVN_cov_chain3 - start_time_HHS_MVN_cov_chain3
+end_time_HRHS_MVN_cov_chain3 <- Sys.time()
+end_time_HRHS_MVN_cov_chain3 - start_time_HRHS_MVN_cov_chain3
 
 
-# save(res_all_par_HHS_MVN_cov_chain3, file = "exposome_data_analysis/res_n1301_O6_M34_J44_K5_6000ite_1000burn_5thin_HHSMVN_modify3_chain3.rda")
-# load(file = "exposome_data_analysis/res_n1301_O6_M34_J44_K5_6000ite_1000burn_5thin_HHSMVN_modify3_chain3.rda")
+# save(res_all_par_HRHS_MVN_cov_chain3, file = "exposome_data_analysis/res_n1301_O6_M34_J44_K5_6000ite_1000burn_5thin_HRHSMVN_modify3_chain3.rda")
+# load(file = "exposome_data_analysis/res_n1301_O6_M34_J44_K5_6000ite_1000burn_5thin_HRHSMVN_modify3_chain3.rda")
 
 
 #################################################################################
-
-
-
-
-
-
-
 
 

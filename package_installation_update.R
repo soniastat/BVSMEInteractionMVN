@@ -13,3 +13,6 @@ devtools::build() # Build the package
 
 # install the package
 devtools::install_github("soniastat/BVSMEInteractionMVN")
+
+
+

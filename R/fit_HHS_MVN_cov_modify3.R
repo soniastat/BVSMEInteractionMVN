@@ -8,12 +8,19 @@
 # Matrix
 #' @importFrom Matrix bdiag Diagonal chol2inv
 
+# MASS
+#' @importFrom MASS mvrnorm
+
+# mvtnorm
+#' @importFrom mvtnorm dmvnorm
+
 # invwishart
 #' @importFrom LaplacesDemon rinvwishart
 
+# folded normal
+#' @importFrom greybox rfnorm
 
 NULL
-
 ########################################################
 
 # Update theta
@@ -341,7 +348,8 @@ update_xi_delta_HHS_MVN_cov <- function(J, M, tausq_delta_update)
   return(xi_delta_update_s)
 }
 
-#########################################################################
+##################################################################################
+
 
 #' Update parameters for HHS-MVN-cov model
 #' @export
