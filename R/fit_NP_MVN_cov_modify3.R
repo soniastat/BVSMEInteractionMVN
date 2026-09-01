@@ -65,7 +65,6 @@ update_theta_NP_MVN_cov_modify <- function(Y, K, W, WTW, n_all_par, J, M, O,
   # Reshape back to n_all_par x K
   theta_update_s <- matrix(theta_vec, nrow = n_all_par, ncol = K)
 
-
   return(theta_update_s)
 }
 
@@ -113,7 +112,7 @@ fit_NP_MVN_cov_modify3 <- function(niter = 6000, burn_in = 1000, thin = 5,
     if (s %% 50 == 0) cat("Iteration:", s, "\n")
     # theta_update
     theta_update_s <- update_theta_NP_MVN_cov_modify(Y, K, W, WTW, n_all_par, J, M, O,
-                                                     sigmasq_alpha = 100,
+                                                     sigmasq_alpha = sigmasq_alpha,
                                                      sigmasq_varphi = sigmasq_varphi,
                                                      Sigma_update = Sigma_update[(s-1), , ]
     )

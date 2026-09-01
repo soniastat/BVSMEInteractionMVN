@@ -150,6 +150,7 @@ update_lambdasq_beta_NHRHSSI_MVN_cov <- function(c, J, K, beta_update, psi_beta_
       accept_lambdasq_beta_update_s[j] <- 1
     }
   }
+
   return(list(lambdasq_beta_update = lambdasq_beta_update_s,
               accept_lambdasq_beta_update = accept_lambdasq_beta_update_s))
 }
@@ -190,6 +191,7 @@ update_lambdasq_gamma_NHRHSSI_MVN_cov <- function(c, M, K, gamma_update, psi_gam
       accept_lambdasq_gamma_update_s[m] <- 1
     }
   }
+
   return(list(lambdasq_gamma_update = lambdasq_gamma_update_s,
               accept_lambdasq_gamma_update = accept_lambdasq_gamma_update_s))
 }
@@ -234,6 +236,7 @@ update_lambdasq_delta_NHRHSSI_MVN_cov <- function(c, J, M, K, delta_update, psi_
       }
     }
   }
+
   return(list(lambdasq_delta_update = lambdasq_delta_update_s,
               accept_lambdasq_delta_update = accept_lambdasq_delta_update_s))
 }
@@ -272,6 +275,7 @@ update_tausq_beta_NHRHSSI_MVN_cov <- function(c, J, K, beta_update, lambdasq_bet
     tausq_beta_update_s <- tausq_beta_prop
     accept_tausq_beta_update_s <- 1
   }
+
   return(list(tausq_beta_update = tausq_beta_update_s,
               accept_tausq_beta_update = accept_tausq_beta_update_s))
 }
@@ -308,6 +312,7 @@ update_tausq_gamma_NHRHSSI_MVN_cov <- function(c, M, K, gamma_update, lambdasq_g
     tausq_gamma_update_s <- tausq_gamma_prop
     accept_tausq_gamma_update_s <- 1
   }
+
   return(list(tausq_gamma_update = tausq_gamma_update_s,
               accept_tausq_gamma_update = accept_tausq_gamma_update_s))
 }
@@ -358,6 +363,7 @@ update_tausq_delta_NHRHSSI_MVN_cov <- function(c, J, M, K, delta_update, xi_delt
     tausq_delta_update_s <- tausq_delta_prop
     accept_tausq_delta_update_s <- 1
   }
+
   return(list(tausq_delta_update = tausq_delta_update_s,
               accept_tausq_delta_update = accept_tausq_delta_update_s))
 }
@@ -372,6 +378,7 @@ update_psi_beta_NHRHSSI_MVN_cov2 <- function(J, lambdasq_beta_update)
     shape = 1,
     scale = 1 + 1 / lambdasq_beta_update
   )
+
   return(psi_beta_update_s)
 }
 
@@ -386,6 +393,7 @@ update_psi_gamma_NHRHSSI_MVN_cov2 <- function(M, lambdasq_gamma_update)
     shape = 1,
     scale = 1 + 1 / lambdasq_gamma_update
   )
+
   return(psi_gamma_update_s)
 }
 
@@ -403,6 +411,7 @@ update_psi_delta_NHRHSSI_MVN_cov2 <- function(
     shape = 1,
     scale = 1 + 1 / lambdasq_delta_update
   )
+
   return(psi_delta_update_s)
 }
 
@@ -410,13 +419,14 @@ update_psi_delta_NHRHSSI_MVN_cov2 <- function(
 #######################################################################################
 
 # Update xi_beta
-update_xi_beta_NHRHSSI_MVN_cov <- function(J, tausq_beta_update)
+update_xi_beta_NHRHSSI_MVN_cov <- function(tausq_beta_update)
 {
   # Use more informative prior (xi_beta ~ IG(15, 3))
   shape_xi_beta <- ((1/2) + 15)
   scale_xi_beta <- (3 + (1 / tausq_beta_update))
 
   xi_beta_update_s <- rinvgamma(1, shape = shape_xi_beta, scale = scale_xi_beta) # IG distribution
+
   return(xi_beta_update_s)
 }
 
@@ -425,13 +435,14 @@ update_xi_beta_NHRHSSI_MVN_cov <- function(J, tausq_beta_update)
 #######################################################################################
 
 # Update xi_gamma
-update_xi_gamma_NHRHSSI_MVN_cov <- function(M, tausq_gamma_update)
+update_xi_gamma_NHRHSSI_MVN_cov <- function(tausq_gamma_update)
 {
   # Use more informative prior (xi_gamma ~ IG(15, 3))
   shape_xi_gamma <- ((1/2) + 15)
   scale_xi_gamma <- (3 + (1 / tausq_gamma_update))
 
   xi_gamma_update_s <- rinvgamma(1, shape = shape_xi_gamma, scale = scale_xi_gamma) # IG distribution
+
   return(xi_gamma_update_s)
 }
 
@@ -440,13 +451,14 @@ update_xi_gamma_NHRHSSI_MVN_cov <- function(M, tausq_gamma_update)
 #######################################################################################
 
 # Update xi_delta
-update_xi_delta_NHRHSSI_MVN_cov <- function(J, M, tausq_delta_update)
+update_xi_delta_NHRHSSI_MVN_cov <- function(tausq_delta_update)
 {
   # Use more informative prior (xi_delta ~ IG(15, 3))
   shape_xi_delta <- ((1/2) + 15)
   scale_xi_delta <- (3 + (1 / tausq_delta_update))
 
   xi_delta_update_s <- rinvgamma(1, shape = shape_xi_delta, scale = scale_xi_delta) # IG distribution
+
   return(xi_delta_update_s)
 }
 
@@ -554,7 +566,7 @@ fit_NHRHSSI_MVN_cov_modify3 <- function(niter = 6000, burn_in = 1000, thin = 5,
     theta_update_s <- update_theta_NHRHSSI_MVN_cov_modify(Y, K, W, WTW,
                                                           n_all_par, J, M, O,
                                                           c = c,
-                                                          sigmasq_alpha = 100,
+                                                          sigmasq_alpha = sigmasq_alpha,
                                                           lambdasq_beta_update = lambdasq_beta_update[(s-1), ],
                                                           tausq_beta_update = tausq_beta_update[(s-1)],
                                                           lambdasq_gamma_update = lambdasq_gamma_update[(s-1), ],
@@ -671,17 +683,17 @@ fit_NHRHSSI_MVN_cov_modify3 <- function(niter = 6000, burn_in = 1000, thin = 5,
 
 
     # Update xi_beta
-    xi_beta_update_s <- update_xi_beta_NHRHSSI_MVN_cov(J, tausq_beta_update = tausq_beta_update[s])
+    xi_beta_update_s <- update_xi_beta_NHRHSSI_MVN_cov(tausq_beta_update = tausq_beta_update[s])
     xi_beta_update[s] <- xi_beta_update_s
 
 
     # Update xi_gamma
-    xi_gamma_update_s <- update_xi_gamma_NHRHSSI_MVN_cov(M, tausq_gamma_update = tausq_gamma_update[s])
+    xi_gamma_update_s <- update_xi_gamma_NHRHSSI_MVN_cov(tausq_gamma_update = tausq_gamma_update[s])
     xi_gamma_update[s] <- xi_gamma_update_s
 
 
     # Update xi_delta
-    xi_delta_update_s <- update_xi_delta_NHRHSSI_MVN_cov(J, M, tausq_delta_update = tausq_delta_update[s])
+    xi_delta_update_s <- update_xi_delta_NHRHSSI_MVN_cov(tausq_delta_update = tausq_delta_update[s])
     xi_delta_update[s] <- xi_delta_update_s
   }
 
