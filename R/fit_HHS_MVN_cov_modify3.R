@@ -350,7 +350,7 @@ update_xi_gamma_HHS_MVN_cov <- function(M, tausq_gamma_update)
 # Update xi_delta (for j and m)
 update_xi_delta_HHS_MVN_cov <- function(J, M, tausq_delta_update)
 {
-  # Use more informative prior (xi_gamma ~ IG(15, 3))
+  # Use more informative prior (xi_delta ~ IG(15, 3))
   shape_xi_delta <- ((J*M/2) + 15)
   scale_xi_delta<- (3 + sum(1 / tausq_delta_update))
 
