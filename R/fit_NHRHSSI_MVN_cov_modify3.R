@@ -17,7 +17,7 @@
 
 
 # invwishart
-#' @importFrom LaplacesDemon rinvwishart
+#' @importFrom LaplacesDemon rinvgamma rinvwishart
 
 # folded normal
 #' @importFrom greybox rfnorm
@@ -262,6 +262,7 @@ update_tausq_beta_NHRHSSI_MVN_cov <- function(c, J, K, beta_update, lambdasq_bet
                                        (c^2 + tausq_beta_update_s * lambdasq_beta_update))
 
   log_accept_ratio_tausq_beta <- (
+    - (K/2) * sum(log(lambdasq_beta_prop_tilde) - log(lambdasq_beta_update_s_1_tilde))
     - ((J*K+3)/2) * (log(tausq_beta_prop) - log(tausq_beta_update_s))
     - (1/tausq_beta_prop) * ((1/xi_beta_update) +
                                sum(sweep(beta_update^2, 1, 2 * lambdasq_beta_prop_tilde, "/")))
@@ -299,6 +300,7 @@ update_tausq_gamma_NHRHSSI_MVN_cov <- function(c, M, K, gamma_update, lambdasq_g
                                         (c^2 + tausq_gamma_update_s * lambdasq_gamma_update))
 
   log_accept_ratio_tausq_gamma <- (
+    - (K/2) * sum(log(lambdasq_gamma_prop_tilde) - log(lambdasq_gamma_update_s_1_tilde))
     - ((M*K+3)/2) * (log(tausq_gamma_prop) - log(tausq_gamma_update_s))
     - (1/tausq_gamma_prop) * ((1/xi_gamma_update) +
                                 sum(sweep(gamma_update^2, 1, 2 * lambdasq_gamma_prop_tilde, "/")))
@@ -350,6 +352,7 @@ update_tausq_delta_NHRHSSI_MVN_cov <- function(c, J, M, K, delta_update, xi_delt
   }
 
   log_accept_ratio_tausq_delta <- (
+    - (K/2) * sum(log(lambdasq_delta_prop_tilde) - log(lambdasq_delta_update_s_1_tilde))
     - ((J*M*K+3)/2) * (log(tausq_delta_prop) - log(tausq_delta_update_s))
     - (1/tausq_delta_prop) * ((1/xi_delta_update) +
                                 sum(sweep(delta_update^2, 1, jm_denom_prop, "/")))

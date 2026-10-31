@@ -16,7 +16,7 @@
 #' @importFrom mvtnorm dmvnorm
 
 # invwishart
-#' @importFrom LaplacesDemon rinvwishart
+#' @importFrom LaplacesDemon rinvgamma rinvwishart
 
 # folded normal
 #' @importFrom greybox rfnorm
@@ -277,6 +277,7 @@ update_tausq_beta_HRHS_MVN_cov <- function(c, J, K, beta_update,
                                          (c^2 + tausq_beta_update_s[j] * lambdasq_beta_update[j, ]))
 
     log_accept_ratio_tausq_beta <- (
+      - (1/2) * sum(log(lambdasq_beta_prop_tilde) - log(lambdasq_beta_update_s_1_tilde))
       - ((K+3)/2) * (log(tausq_beta_prop) - log(tausq_beta_update_s[j]))
       - (1/tausq_beta_prop) * ((1/xi_beta_update) +
                                  sum(beta_update[j, ]^2 / (2*lambdasq_beta_prop_tilde)))
@@ -319,6 +320,7 @@ update_tausq_gamma_HRHS_MVN_cov <- function(c, M, K, gamma_update,
                                           (c^2 + tausq_gamma_update_s[m] * lambdasq_gamma_update[m, ]))
 
     log_accept_ratio_tausq_gamma <- (
+      - (1/2) * sum(log(lambdasq_gamma_prop_tilde) - log(lambdasq_gamma_update_s_1_tilde))
       - ((K+3)/2) * (log(tausq_gamma_prop) - log(tausq_gamma_update_s[m]))
       - (1/tausq_gamma_prop) * ((1/xi_gamma_update) +
                                   sum(gamma_update[m, ]^2 / (2*lambdasq_gamma_prop_tilde)))
@@ -373,13 +375,14 @@ update_tausq_delta_HRHS_MVN_cov <- function(c, J, M, K, delta_update, xi_delta_u
                                             (c^2 + tausq_delta_update_s[jm] * lambdasq_delta_update[jm, ]))
 
       log_accept_ratio_tausq_delta <- (
+        - (1/2) * sum(log(lambdasq_delta_prop_tilde) - log(lambdasq_delta_update_s_1_tilde))
         - ((K+3)/2) * (log(tausq_delta_prop) - log(tausq_delta_update_s[jm]))
         - (1/tausq_delta_prop) * ((1/xi_delta_update) +
-                                    sum(delta_update[jm, ]^2 / (2 * lambdasq_delta_prop_tilde *
-                                                                  lambdasq_beta_update_tilde[j, ] * lambdasq_gamma_update_tilde[m, ])))
+                         sum(delta_update[jm, ]^2 / (2 * lambdasq_delta_prop_tilde *
+                               lambdasq_beta_update_tilde[j, ] * lambdasq_gamma_update_tilde[m, ])))
         + (1/tausq_delta_update_s[jm]) * ((1/xi_delta_update) +
-                                            sum(delta_update[jm, ]^2 / (2 * lambdasq_delta_update_s_1_tilde *
-                                                                          lambdasq_beta_update_tilde[j, ] * lambdasq_gamma_update_tilde[m, ])))
+                         sum(delta_update[jm, ]^2 / (2 * lambdasq_delta_update_s_1_tilde *
+                               lambdasq_beta_update_tilde[j, ] * lambdasq_gamma_update_tilde[m, ])))
       )
 
       # Accept/reject the proposed tausq_delta

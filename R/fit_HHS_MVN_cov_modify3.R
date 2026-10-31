@@ -15,7 +15,7 @@
 #' @importFrom mvtnorm dmvnorm
 
 # invwishart
-#' @importFrom LaplacesDemon rinvwishart
+#' @importFrom LaplacesDemon rinvgamma rinvwishart
 
 # folded normal
 #' @importFrom greybox rfnorm
